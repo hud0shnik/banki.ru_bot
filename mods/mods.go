@@ -75,6 +75,7 @@ func parseCommand(str string) (int, string, string, int) {
 			break
 		}
 	}
+
 	str = str[len(fid)+5:]
 	for i := 0; i < len(str); i++ {
 		if str[i] == '&' {
@@ -137,7 +138,6 @@ func checkNewPage(botUrl string, update Update, fullUrl string) bool {
 func Check(botUrl string, update Update, str string) bool {
 
 	id, fid, tid, pagen := parseCommand(str)
-	nextFullUrl := "https://www.banki.ru/forum/?PAGE_NAME=message&FID=" + fid + "&TID=" + tid + "&PAGEN_1=" + strconv.Itoa(pagen+1)
 	timeSinceLastCheck := time.Now().Unix()
 	SendMsg(botUrl, update, "Начинаю следить за тредом")
 
@@ -147,7 +147,7 @@ func Check(botUrl string, update Update, str string) bool {
 			id++
 			timeSinceLastCheck = time.Now().Unix()
 		} else {
-			if checkNewPage(botUrl, update, nextFullUrl) {
+			if checkNewPage(botUrl, update, "https://www.banki.ru/forum/?PAGE_NAME=message&FID="+fid+"&TID="+tid+"&PAGEN_1="+strconv.Itoa(pagen+1)) {
 				pagen++
 				id++
 				timeSinceLastCheck = time.Now().Unix()
@@ -158,7 +158,7 @@ func Check(botUrl string, update Update, str string) bool {
 		time.Sleep(time.Minute * 10)
 
 		if time.Now().Unix()-timeSinceLastCheck > 86400 {
-			//SendMsg(botUrl, update, "24 часа прошло с последнего сообщения по теме:\n\n"+"https://www.banki.ru/forum/?PAGE_NAME=message&FID="+fid+"&TID="+tid+"&PAGEN_1="+strconv.Itoa(pagenInt)+"\n\n перестаю за ним следить")
+			SendMsg(botUrl, update, "24 часа прошло с последнего сообщения по теме:\n\n"+"https://www.banki.ru/forum/?PAGE_NAME=message&FID="+fid+"&TID="+tid+"&PAGEN_1="+strconv.Itoa(pagen)+"\n\n перестаю за ним следить")
 			return true
 		}
 	}
