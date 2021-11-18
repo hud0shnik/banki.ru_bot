@@ -11,30 +11,22 @@ import (
 	"github.com/spf13/viper"
 )
 
+type TelegramResponse struct {
+	Result []Update `json:"result"`
+}
+
 type Update struct {
 	UpdateId int     `json:"update_id"`
 	Message  Message `json:"message"`
 }
 
-type Sticker struct {
-	File_id     string `json:"file_id"`
-	Emoji       string `json:"emoji"`
-	Is_animated bool   `json:"is_animated"`
-	Set_name    string `json:"set_name"`
-}
-
 type Message struct {
-	Chat    Chat    `json:"chat"`
-	Text    string  `json:"text"`
-	Sticker Sticker `json:"sticker"`
+	Chat Chat   `json:"chat"`
+	Text string `json:"text"`
 }
 
 type Chat struct {
 	ChatId int `json:"id"`
-}
-
-type TelegramResponse struct {
-	Result []Update `json:"result"`
 }
 
 func InitConfig() error {
@@ -100,11 +92,11 @@ func checkNewMsg(botUrl string, update Update, fullUrl string, msgId int) bool {
 	if err != nil {
 		return false
 	}
-	isNewMsg := strings.Contains(string(body), ">#"+strconv.Itoa(msgId+1)+"</a>")
-	if isNewMsg {
-		SendMsg(botUrl, update, "Новое сообщение!\n\n\n"+fullUrl)
-		return true
 
+	if strings.Contains(string(body), ">#"+strconv.Itoa(msgId+1)+"</a>") {
+		SendMsg(botUrl, update, "Новое сообщение!\n\n\n"+fullUrl)
+
+		return true
 	}
 	return false
 }
@@ -119,16 +111,8 @@ func checkNewPage(botUrl string, update Update, fullUrl string) bool {
 	if err != nil {
 		return false
 	}
-	/*file, err := os.Create("page1.html")
-	if err != nil {
-		fmt.Println("Unable to create file:", err)
-		os.Exit(1)
-	}
-	defer file.Close()
-	file.WriteString(string(body))*/
-	is404 := strings.Contains(string(body), "<div class=\"ui-alert ui-alert--danger margin-top-default margin-bottom-default\">")
 
-	if !is404 {
+	if !strings.Contains(string(body), "<div class=\"ui-alert ui-alert--danger margin-top-default margin-bottom-default\">") {
 		SendMsg(botUrl, update, "Новая страница!\n\n\n"+fullUrl)
 		return true
 
@@ -160,9 +144,10 @@ func Check(botUrl string, update Update, str string) bool {
 		time.Sleep(time.Minute * 10)
 
 		if time.Now().Unix()-timeSinceLastCheck > 86400 {
-			SendMsg(botUrl, update, "24 часа прошло с последнего сообщения по теме:\n\n"+"https://www.banki.ru/forum/?PAGE_NAME=message&FID="+fid+"&TID="+tid+"&PAGEN_1="+strconv.Itoa(pagen)+"\n\n перестаю за ним следить")
+			SendMsg(botUrl, update, "24 часа прошло с последнего сообщения в треде:\n\n"+"https://www.banki.ru/forum/?PAGE_NAME=message&FID="+fid+"&TID="+tid+"&PAGEN_1="+strconv.Itoa(pagen)+"\n\n перестаю за ним следить")
 			return true
 		}
+
 	}
 
 }
