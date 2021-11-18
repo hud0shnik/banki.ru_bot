@@ -169,7 +169,7 @@ func Check(botUrl string, update Update, str string) bool {
 		time.Sleep(time.Minute * 10)
 
 		if time.Now().Unix()-timeSinceLastCheck > 86400 {
-			SendMsg(botUrl, update, "24 часа прошло с последнего сообщения в треде:\n\n"+"https://www.banki.ru/forum/?PAGE_NAME=message&FID="+fid+"&TID="+tid+"&PAGEN_1="+strconv.Itoa(pagen)+"\n\n перестаю за ним следить")
+			SendMsg(botUrl, update, "24 Часа прошло с последнего сообщения в треде:\n\n"+"https://www.banki.ru/forum/?PAGE_NAME=message&FID="+fid+"&TID="+tid+"&PAGEN_1="+strconv.Itoa(pagen)+"\n\n перестаю за ним следить")
 			return true
 		}
 
