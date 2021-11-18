@@ -69,10 +69,12 @@ func parseCommand(str string) (int, string, string, int) {
 		}
 		fid += string(str[i])
 	}
-	for i := 0; i < len(str); i++ {
-		if str[i] == '#' {
-			str = str[:i]
-			break
+	if strings.Contains(str, "#") {
+		for i := 0; i < len(str); i++ {
+			if str[i] == '#' {
+				str = str[:i]
+				break
+			}
 		}
 	}
 
