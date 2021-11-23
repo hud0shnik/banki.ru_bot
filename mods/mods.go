@@ -107,25 +107,6 @@ func parseCommand(str string) (int, string, string, int) {
 	return id, fid, tid, pagen
 }
 
-func checkNewMsg(botUrl string, update Update, fullUrl string, msgId int) bool {
-	resp, err := http.Get(fullUrl)
-	if err != nil {
-		return false
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return false
-	}
-
-	if strings.Contains(string(body), ">#"+strconv.Itoa(msgId+1)+"</a>") {
-		SendMsg(botUrl, update, "Новое сообщение!\n\n\n"+fullUrl)
-
-		return true
-	}
-	return false
-}
-
 func checkNewPage(botUrl string, update Update, fullUrl string) bool {
 	resp, err := http.Get(fullUrl)
 	if err != nil {
@@ -143,7 +124,27 @@ func checkNewPage(botUrl string, update Update, fullUrl string) bool {
 
 	}
 	return false
+}
 
+func checkNewMsg(botUrl string, update Update, fullUrl string, msgId int) int {
+	resp, err := http.Get(fullUrl)
+	var newMsgs int
+	if err != nil {
+		return -1
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return -1
+	}
+
+	for newMsgs = 1; ; newMsgs++ {
+		if strings.Contains(string(body), ">#"+strconv.Itoa(msgId+newMsgs)+"</a>") {
+		} else {
+			break
+		}
+	}
+	return newMsgs - 1
 }
 
 func Check(botUrl string, update Update, str string) bool {
@@ -154,8 +155,10 @@ func Check(botUrl string, update Update, str string) bool {
 
 	for {
 		fmt.Println("\tChecking new msg....\n", id, fid, tid, pagen)
-		if checkNewMsg(botUrl, update, "https://www.banki.ru/forum/?PAGE_NAME=message&FID="+fid+"&TID="+tid+"&PAGEN_1="+strconv.Itoa(pagen), id) {
-			id++
+		newMsgs := checkNewMsg(botUrl, update, "https://www.banki.ru/forum/?PAGE_NAME=message&FID="+fid+"&TID="+tid+"&PAGEN_1="+strconv.Itoa(pagen), id)
+		if 0 < newMsgs {
+			SendMsg(botUrl, update, "Новых сообщений: "+strconv.Itoa(newMsgs-1)+"\n\n\n"+"https://www.banki.ru/forum/?PAGE_NAME=message&FID="+fid+"&TID="+tid+"&PAGEN_1="+strconv.Itoa(pagen))
+			id += newMsgs
 			timeSinceLastCheck = time.Now().Unix()
 		} else {
 			if checkNewPage(botUrl, update, "https://www.banki.ru/forum/?PAGE_NAME=message&FID="+fid+"&TID="+tid+"&PAGEN_1="+strconv.Itoa(pagen+1)) {
@@ -174,5 +177,4 @@ func Check(botUrl string, update Update, str string) bool {
 		}
 
 	}
-
 }
