@@ -154,7 +154,7 @@ func Check(botUrl string, update Update, str string) bool {
 	SendMsg(botUrl, update, "Начинаю следить за тредом")
 
 	for {
-		fmt.Println("\tChecking new msg....\n", id, fid, tid, pagen)
+		fmt.Println("\tChecking \t", id, fid, tid, pagen)
 		newMsgs := checkNewMsg(botUrl, update, "https://www.banki.ru/forum/?PAGE_NAME=message&FID="+fid+"&TID="+tid+"&PAGEN_1="+strconv.Itoa(pagen), id)
 		if 0 < newMsgs {
 			SendMsg(botUrl, update, "Новых сообщений: "+strconv.Itoa(newMsgs-1)+"\n\n\n"+"https://www.banki.ru/forum/?PAGE_NAME=message&FID="+fid+"&TID="+tid+"&PAGEN_1="+strconv.Itoa(pagen))
@@ -168,7 +168,7 @@ func Check(botUrl string, update Update, str string) bool {
 			}
 		}
 
-		fmt.Println("sleep...")
+		fmt.Println("Sleep \t", id, fid, tid, pagen)
 		time.Sleep(time.Minute * 10)
 
 		if time.Now().Unix()-timeSinceLastCheck > 86400 {
