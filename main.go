@@ -64,7 +64,7 @@ func respond(botUrl string, update mods.Update) error {
 		return nil
 	}
 
-	if strings.Contains(msg, "https://www.banki.ru/forum/?PAGE_NAME=") && len(msg) > 63 {
+	if strings.Contains(msg, "https://www.banki.ru/forum/?PAGE_NAME=") {
 		go mods.Check(botUrl, update, msg)
 		return nil
 	}
