@@ -61,9 +61,6 @@ func respond(botUrl string, update mods.Update) error {
 		mods.SendMsg(botUrl, update, "Чтобы подписать бота на тред, отправьте айди вашего сообщения и ссылку на сам тред в формате\n"+
 			"\"777 https://www.banki.ru/forum/?PAGE_NAME=read&FID=77&TID=77777&PAGEN_1=777#forum-message-list\"\n"+
 			"когда появятся новые сообщения, бот вас оповестит\n")
-		mods.SendMsg(botUrl, update, "Осторожно, ссылку нужно вводить именно такую, что описана выше, ссылки типа:\n"+
-			"https://www.banki.ru/forum/?PAGE_NAME=read&FID=77&TID=777&MID=7777#message7777\n"+
-			"Он не воспринимает")
 		return nil
 	}
 
