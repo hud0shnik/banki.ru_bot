@@ -36,16 +36,22 @@ type SendMessage struct {
 	Text   string `json:"text"`
 }
 
+// Функция для отправки сообщений пользователю
 func SendMsg(botUrl string, update Update, msg string) error {
+	// Запись того, что и куда отправить
 	botMessage := SendMessage{
 		ChatId: update.Message.Chat.ChatId,
 		Text:   msg,
 	}
+
+	// Запись сообщения в json
 	buf, err := json.Marshal(botMessage)
 	if err != nil {
 		fmt.Println("Marshal json error: ", err)
 		return err
 	}
+
+	// Отправка сообщения
 	_, err = http.Post(botUrl+"/sendMessage", "application/json", bytes.NewBuffer(buf))
 	if err != nil {
 		fmt.Println("SendMessage method error: ", err)
@@ -54,15 +60,9 @@ func SendMsg(botUrl string, update Update, msg string) error {
 	return nil
 }
 
-func InitConfig() error {
-	viper.AddConfigPath("configs")
-	viper.SetConfigName("config")
-
-	return viper.ReadInConfig()
-}
-
+// Функция, которая ищет в ссылке значения fid tid и page_n
 func parseCommand(str string) (int, string, string, int) {
-	//7777 https://www.banki.ru/forum/?PAGE_NAME=message&FID=77&TID=777777&PAGEN_1=7777#forum-message-list
+	//str: 7777 https://www.banki.ru/forum/?PAGE_NAME=message&FID=77&TID=777777&PAGEN_1=7777#forum-message-list
 	var fid, tid string
 	var id, pagen int
 	for i := 0; i < len(str); i++ {
@@ -72,20 +72,21 @@ func parseCommand(str string) (int, string, string, int) {
 			break
 		}
 	}
-	//https://www.banki.ru/forum/?PAGE_NAME=message&FID=77&TID=777777&PAGEN_1=7777#forum-message-list
+	//str: https://www.banki.ru/forum/?PAGE_NAME=message&FID=77&TID=777777&PAGEN_1=7777#forum-message-list
 	for i := 0; i < len(str); i++ {
 		if str[i] == '&' {
 			str = str[i+5:]
 			break
 		}
 	}
-	//77&TID=777777&PAGEN_1=7777#forum-message-list
+	//str: 77&TID=777777&PAGEN_1=7777#forum-message-list
 	for i := 0; i < len(str); i++ {
 		if str[i] == '&' {
 			break
 		}
 		fid += string(str[i])
 	}
+
 	if strings.Contains(str, "#") {
 		for i := 0; i < len(str); i++ {
 			if str[i] == '#' {
@@ -95,6 +96,7 @@ func parseCommand(str string) (int, string, string, int) {
 		}
 	}
 
+	//str: 77&TID=777777&PAGEN_1=7777
 	str = str[len(fid)+5:]
 	for i := 0; i < len(str); i++ {
 		if str[i] == '&' {
@@ -107,7 +109,9 @@ func parseCommand(str string) (int, string, string, int) {
 	return id, fid, tid, pagen
 }
 
+// Функция, проверяющая наличие новой страницы
 func checkNewPage(botUrl string, update Update, fullUrl string) bool {
+	// Запрос страницы
 	resp, err := http.Get(fullUrl)
 	if err != nil {
 		return false
@@ -118,6 +122,7 @@ func checkNewPage(botUrl string, update Update, fullUrl string) bool {
 		return false
 	}
 
+	// Если в ответ бот получил страницу с кодом 404, возвращает false
 	if !strings.Contains(string(body), "<div class=\"ui-alert ui-alert--danger margin-top-default margin-bottom-default\">") {
 		SendMsg(botUrl, update, "Новая страница!\n\n\n"+fullUrl)
 		return true
@@ -126,7 +131,9 @@ func checkNewPage(botUrl string, update Update, fullUrl string) bool {
 	return false
 }
 
+// Функция, проверяющая наличие новых сообщений
 func checkNewMsg(botUrl string, update Update, fullUrl string, msgId int) int {
+	// Запрос страницы
 	resp, err := http.Get(fullUrl)
 	var newMsgs int
 	if err != nil {
@@ -137,7 +144,7 @@ func checkNewMsg(botUrl string, update Update, fullUrl string, msgId int) int {
 	if err != nil {
 		return -1
 	}
-
+	// Поиск новых сообщений
 	for newMsgs = 1; ; newMsgs++ {
 		if strings.Contains(string(body), ">#"+strconv.Itoa(msgId+newMsgs)+"</a>") {
 		} else {
@@ -147,8 +154,9 @@ func checkNewMsg(botUrl string, update Update, fullUrl string, msgId int) int {
 	return newMsgs - 1
 }
 
+// Функция, которая следит за тредом
 func Check(botUrl string, update Update, str string) bool {
-
+	// Получение значений из сообщений
 	id, fid, tid, pagen := parseCommand(str)
 	timeSinceLastCheck := time.Now().Unix()
 	SendMsg(botUrl, update, "Начинаю следить за тредом")
@@ -156,7 +164,7 @@ func Check(botUrl string, update Update, str string) bool {
 	for {
 		fmt.Println("\tChecking \t", id, fid, tid, pagen)
 		newMsgs := checkNewMsg(botUrl, update, "https://www.banki.ru/forum/?PAGE_NAME=message&FID="+fid+"&TID="+tid+"&PAGEN_1="+strconv.Itoa(pagen), id)
-		if 0 < newMsgs {
+		if newMsgs > 0 {
 			SendMsg(botUrl, update, "Новых сообщений: "+strconv.Itoa(newMsgs-1)+"\n\n\n"+"https://www.banki.ru/forum/?PAGE_NAME=message&FID="+fid+"&TID="+tid+"&PAGEN_1="+strconv.Itoa(pagen))
 			id += newMsgs
 			timeSinceLastCheck = time.Now().Unix()
@@ -177,4 +185,12 @@ func Check(botUrl string, update Update, str string) bool {
 		}
 
 	}
+}
+
+// Функция инициализации конфига (токенов)
+func InitConfig() error {
+	viper.AddConfigPath("configs")
+	viper.SetConfigName("config")
+
+	return viper.ReadInConfig()
 }
