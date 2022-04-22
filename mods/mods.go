@@ -38,6 +38,7 @@ type SendMessage struct {
 
 // Функция для отправки сообщений пользователю
 func SendMsg(botUrl string, update Update, msg string) error {
+
 	// Запись того, что и куда отправить
 	botMessage := SendMessage{
 		ChatId: update.Message.Chat.ChatId,
@@ -62,6 +63,7 @@ func SendMsg(botUrl string, update Update, msg string) error {
 
 // Функция, которая ищет в ссылке значения fid tid и page_n
 func parseCommand(str string) (int, string, string, int) {
+
 	//str: 7777 https://www.banki.ru/forum/?PAGE_NAME=message&FID=77&TID=777777&PAGEN_1=7777#forum-message-list
 	var fid, tid string
 	var id, pagen int
@@ -72,6 +74,7 @@ func parseCommand(str string) (int, string, string, int) {
 			break
 		}
 	}
+
 	//str: https://www.banki.ru/forum/?PAGE_NAME=message&FID=77&TID=777777&PAGEN_1=7777#forum-message-list
 	for i := 0; i < len(str); i++ {
 		if str[i] == '&' {
@@ -79,6 +82,7 @@ func parseCommand(str string) (int, string, string, int) {
 			break
 		}
 	}
+
 	//str: 77&TID=777777&PAGEN_1=7777#forum-message-list
 	for i := 0; i < len(str); i++ {
 		if str[i] == '&' {
@@ -111,6 +115,7 @@ func parseCommand(str string) (int, string, string, int) {
 
 // Функция, проверяющая наличие новой страницы
 func checkNewPage(botUrl string, update Update, fullUrl string) bool {
+
 	// Запрос страницы
 	resp, err := http.Get(fullUrl)
 	if err != nil {
@@ -133,6 +138,7 @@ func checkNewPage(botUrl string, update Update, fullUrl string) bool {
 
 // Функция, проверяющая наличие новых сообщений
 func checkNewMsg(botUrl string, update Update, fullUrl string, msgId int) int {
+
 	// Запрос страницы
 	resp, err := http.Get(fullUrl)
 	var newMsgs int
@@ -144,6 +150,7 @@ func checkNewMsg(botUrl string, update Update, fullUrl string, msgId int) int {
 	if err != nil {
 		return -1
 	}
+
 	// Поиск новых сообщений
 	for newMsgs = 1; ; newMsgs++ {
 		if strings.Contains(string(body), ">#"+strconv.Itoa(msgId+newMsgs)+"</a>") {
@@ -151,11 +158,13 @@ func checkNewMsg(botUrl string, update Update, fullUrl string, msgId int) int {
 			break
 		}
 	}
+
 	return newMsgs - 1
 }
 
 // Функция, которая следит за тредом
 func Check(botUrl string, update Update, str string) bool {
+
 	// Получение значений из сообщений
 	id, fid, tid, pagen := parseCommand(str)
 	timeSinceLastCheck := time.Now().Unix()
