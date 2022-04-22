@@ -14,6 +14,7 @@ import (
 )
 
 func main() {
+
 	// Инициализация конфига (токенов)
 	err := mods.InitConfig()
 	if err != nil {
@@ -26,6 +27,7 @@ func main() {
 	offSet := 0
 
 	for {
+
 		// Получение апдейтов
 		updates, err := getUpdates(botUrl, offSet)
 		if err != nil {
@@ -37,12 +39,14 @@ func main() {
 			respond(botUrl, update)
 			offSet = update.UpdateId + 1
 		}
+
 		// Вывод в консоль информации для тестов
 		fmt.Println(updates)
 	}
 }
 
 func getUpdates(botUrl string, offset int) ([]mods.Update, error) {
+
 	// Rest запрос для получения апдейтов
 	resp, err := http.Get(botUrl + "/getUpdates?offset=" + strconv.Itoa(offset))
 	if err != nil {
@@ -64,8 +68,9 @@ func getUpdates(botUrl string, offset int) ([]mods.Update, error) {
 	return restResponse.Result, nil
 }
 
-//	https://core.telegram.org/bots/api#using-a-local-bot-api-server
+// Функция генерации и отправки сообщения
 func respond(botUrl string, update mods.Update) error {
+
 	// msg - текст сообщения пользователя
 	msg := update.Message.Text
 
